@@ -1,0 +1,112 @@
+import numpy as np
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense, Dropout
+from tensorflow.keras.callbacks import EarlyStopping
+
+class StockPredictor:
+    """
+    LSTM-based Stock Price Prediction Model.
+    Uses Multivariate Time-Series forecasting.
+    """
+
+    def __init__(self, lookback_days=60):
+        self.lookback_days = lookback_days
+        self.scaler = MinMaxScaler(feature_range=(0, 1))
+        self.model = None
+
+    def prepare_data(self, df):
+        """
+        Prepares the data for LSTM training.
+        df should contain the technical indicators added by data_engine.
+        """
+        # We use 'Close' as our target and other indicators as features
+        # To keep it simple for now, we use Close price, but in full mode,
+        # we use all ta_features.
+        data = df[['Close']].values
+
+        # Scale the data
+        scaled_data = self.scaler.fit_transform(data)
+
+        x = []
+        y = []
+
+        for i in range(self.lookback_days, len(scaled_data)):
+            x.append(scaled_data[i-self.lookback_days:i, 0])
+            y.append(scaled_data[i, 0])
+
+        return np.array(x), np.array(y)
+
+    def build_model(self, input_shape):
+        """
+        Creates the LSTM architecture.
+        """
+        model = Sequential([
+            # Layer 1: LSTM with Dropout to prevent overfitting
+            LSTM(units=50, return_sequences=True, input_shape=input_shape),
+            Dropout(0.2),
+
+            # Layer 2: LSTM
+            LSTM(units=50, return_sequences=False),
+            Dropout(0.2),
+
+            # Layer 3: Dense layers for the final price prediction
+            Dense(units=25),
+            Dense(units=1)
+        ])
+
+        model.compile(optimizer='adam', loss='mean_squared_error')
+        self.model = model
+        return model
+
+    def train(self, x_train, y_train, epochs=25, batch_size=32):
+        """
+        Trains the model with EarlyStopping to avoid overfitting.
+        """
+        # Reshape x to be [samples, time steps, features]
+        x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+
+        early_stop = EarlyStopping(monitor='loss', patience=5, restore_best_weights=True)
+
+        history = self.model.fit(
+            x_train, y_train,
+            epochs=epochs,
+            batch_size=batch_size,
+            callbacks=[early_stop],
+            verbose=1
+        )
+        return history
+
+    def predict_next_day(self, last_60_days_data):
+        """
+        Predicts the price for the next trading day.
+        """
+        # Scale input
+        scaled_input = self.scaler.transform(last_60_days_data.reshape(-1, 1))
+        x_input = np.reshape(scaled_input, (1, self.lookback_days, 1))
+
+        prediction_scaled = self.model.predict(x_input)
+        # Inverse scale back to original price
+        prediction_price = self.scaler.inverse_transform(prediction_scaled)
+
+        return prediction_price[0][0]
+
+if __name__ == "__main__":
+    # Mock test
+    from data_engine import StockDataEngine
+
+    engine = StockDataEngine()
+    df = engine.fetch_data("AAPL")
+    if df is not None:
+        processed_df = engine.preprocess_data(df)
+
+        predictor = StockPredictor()
+        x, y = predictor.prepare_data(processed_df)
+
+        predictor.build_model((predictor.lookback_days, 1))
+        predictor.train(x, y, epochs=1) # Small epoch for test
+
+        last_60 = processed_df['Close'].values[-60:]
+        pred = predictor.predict_next_day(last_60)
+        print(f"Predicted Next Day Price: {pred}")

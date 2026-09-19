@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+yfinance
+pandas
+numpy
+scikit-learn
+requests
+itsdangerous
+python-dotenv
+lxml
