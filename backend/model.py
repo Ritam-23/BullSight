@@ -90,6 +90,41 @@ def _walk_forward(X: np.ndarray, y: np.ndarray, h: int, test_start: int) -> dict
     return preds
 
 
+def _regression_metrics(pred_r: np.ndarray, true_r: np.ndarray,
+                        predicted: np.ndarray, actual: np.ndarray) -> dict:
+    """Standard regression metrics (MSE, RMSE, MAE, R2, RSE) on the out-of-sample test window.
+
+    Reported on two scales: the model's actual target (forward LOG RETURNS) — the honest measure of
+    predictive skill — and on reconstructed PRICE, which looks flattering because price is dominated
+    by its own level. R2 is 1 - SS_res/SS_tot; RSE is the residual standard error sqrt(SS_res/(n-2))
+    (ISLR sense); relative_squared_error (RSE's ML cousin) is SS_res/SS_tot = 1 - R2.
+    """
+    def _block(pred: np.ndarray, true: np.ndarray) -> dict:
+        n = len(true)
+        resid = pred - true
+        ss_res = float(np.sum(resid ** 2))
+        ss_tot = float(np.sum((true - np.mean(true)) ** 2))
+        mse = float(np.mean(resid ** 2))
+        return {
+            "n": int(n),
+            "mse": mse,
+            "rmse": float(np.sqrt(mse)),
+            "mae": float(np.mean(np.abs(resid))),
+            "r2": (1 - ss_res / ss_tot) if ss_tot > 0 else None,
+            "rse": float(np.sqrt(ss_res / (n - 2))) if n > 2 else None,
+            "relative_squared_error": (ss_res / ss_tot) if ss_tot > 0 else None,
+        }
+    return {"log_return": _block(pred_r, true_r), "price": _block(predicted, actual)}
+
+
+def _round_deep(obj, nd=6):
+    if isinstance(obj, dict):
+        return {k: _round_deep(v, nd) for k, v in obj.items()}
+    if isinstance(obj, float):
+        return round(obj, nd)
+    return obj
+
+
 def _metrics(pred_r: np.ndarray, true_r: np.ndarray, base_close: np.ndarray) -> dict:
     actual = base_close * np.exp(true_r)
     predicted = base_close * np.exp(pred_r)
@@ -107,6 +142,7 @@ def _metrics(pred_r: np.ndarray, true_r: np.ndarray, base_close: np.ndarray) -> 
         "skill_vs_naive": round(100 * (1 - mape / mape_naive), 2) if mape_naive else 0.0,
         "directional_accuracy": round(100 * hit, 1) if hit is not None else None,
         "always_up_accuracy": round(100 * max(up_share, 1 - up_share), 1),
+        "regression": _round_deep(_regression_metrics(pred_r, true_r, predicted, actual)),
     }
 
 
