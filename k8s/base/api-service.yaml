@@ -1,0 +1,13 @@
+# Internal-only. The browser never hits the API directly — the web tier proxies /api/* to it.
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+spec:
+  type: ClusterIP
+  selector:
+    app: bullsight
+    component: api
+  ports:
+    - port: 8000
+      targetPort: 8000

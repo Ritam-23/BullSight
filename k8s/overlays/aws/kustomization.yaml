@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: bullsight
+
+resources:
+  - ../../base
+  - storageclass.yaml
+  - ingress.yaml
+
+# ECR images. The deploy script rewrites these with your account/region/tag via
+#   kustomize edit set image bullsight-api=<ecr>/bullsight-api:<tag> ...
+# The <ACCOUNT>/<REGION> placeholders below are just defaults for `kubectl kustomize` to render.
+images:
+  - name: bullsight-api
+    newName: ACCOUNT.dkr.ecr.REGION.amazonaws.com/bullsight-api
+    newTag: latest
+  - name: bullsight-web
+    newName: ACCOUNT.dkr.ecr.REGION.amazonaws.com/bullsight-web
+    newTag: latest
+
+patches:
+  # Bind the data volume to gp3 EBS.
+  - target:
+      kind: PersistentVolumeClaim
+      name: api-data
+    patch: |
+      - op: add
+        path: /spec/storageClassName
+        value: gp3
+  # Public URL drives CORS + cookie Secure. Replace with your ALB DNS (or domain) after the
+  # ingress is provisioned, then re-apply — see DEPLOY.md "Wire up the URL".
+  - target:
+      kind: ConfigMap
+      name: api-config
+    patch: |
+      - op: replace
+        path: /data/FRONTEND_URL
+        value: "http://REPLACE_WITH_ALB_DNS_NAME"

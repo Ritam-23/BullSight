@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-config
+data:
+  # Server-side only: how the Next proxy + /receipt route reach the API inside the cluster.
+  BACKEND_URL: "http://api:8000"
+  SMTP_PORT: "587"

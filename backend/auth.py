@@ -56,6 +56,19 @@ def _set_session(resp, user: dict):
         secure=config.COOKIE_SECURE,
         path="/",
     )
+    # A short-lived, JS-readable marker so the frontend can tell "this page load is a
+    # fresh sign-in" (covers both the JSON password login and the OAuth redirect) and
+    # email the purchase receipt exactly once. Not security-sensitive: the httponly
+    # session cookie above is the actual credential.
+    resp.set_cookie(
+        "fresh_login",
+        "1",
+        max_age=120,
+        httponly=False,
+        samesite="lax",
+        secure=config.COOKIE_SECURE,
+        path="/",
+    )
 
 
 def read_session(token: str | None) -> dict | None:

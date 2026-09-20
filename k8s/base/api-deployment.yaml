@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  labels:
+    app: bullsight
+    component: api
+spec:
+  replicas: 1  # SQLite is single-writer — do NOT scale this beyond 1.
+  # Recreate (not RollingUpdate): the ReadWriteOnce volume can't be mounted by two pods at once,
+  # so the old pod must terminate before the new one starts.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: bullsight
+      component: api
+  template:
+    metadata:
+      labels:
+        app: bullsight
+        component: api
+    spec:
+      securityContext:
+        fsGroup: 10001  # let the mounted volume be writable by the non-root appuser
+      containers:
+        - name: api
+          image: bullsight-api:latest  # overridden per-overlay
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: api-config
+            - secretRef:
+                name: api-secret
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1.5Gi"
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: api-data

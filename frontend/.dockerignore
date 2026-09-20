@@ -1,0 +1,26 @@
+# Deps + build output (rebuilt inside the image)
+node_modules/
+.next/
+out/
+build/
+
+# Local env / secrets (provided at runtime by k8s/compose)
+.env
+.env.*
+
+# Logs / caches
+*.log
+dev.log
+.turbo/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# NOTE: src/receipt-assets and public/ are intentionally NOT ignored —
+# the /receipt route reads the fonts + pdf_bg.png from disk at runtime.

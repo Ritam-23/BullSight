@@ -1,0 +1,10 @@
+# Non-secret backend config. Secret values (session secret, OAuth, Stripe) live in the Secret.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-config
+data:
+  # Public URL the browser uses — drives CORS allow-origin AND cookie Secure flag.
+  # Overridden per-overlay (localhost for local, the ALB/domain for AWS).
+  FRONTEND_URL: "http://localhost:3000"
+  ALLOW_DEMO_LOGIN: "true"

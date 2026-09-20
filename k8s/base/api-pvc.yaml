@@ -1,0 +1,13 @@
+# Persistent storage for the backend's SQLite DB, uploaded avatars, cached listings and the
+# session secret. ReadWriteOnce: mounted by the single API pod (see the Recreate strategy).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: api-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  # storageClassName is set per-overlay (local default vs AWS gp3/EBS).

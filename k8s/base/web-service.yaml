@@ -1,0 +1,13 @@
+# The public entry point. ClusterIP here; overlays expose it (NodePort locally, ALB Ingress on AWS).
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  type: ClusterIP
+  selector:
+    app: bullsight
+    component: web
+  ports:
+    - port: 80
+      targetPort: 3000

@@ -1,0 +1,44 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: bullsight
+
+resources:
+  - ../../base
+
+# Locally-built images (loaded into kind/minikube; never pulled from a registry).
+images:
+  - name: bullsight-api
+    newName: bullsight-api
+    newTag: latest
+  - name: bullsight-web
+    newName: bullsight-web
+    newTag: latest
+
+patches:
+  # Never try to pull the locally-built images.
+  - target:
+      kind: Deployment
+      name: api
+    patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: IfNotPresent
+  - target:
+      kind: Deployment
+      name: web
+    patch: |
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: IfNotPresent
+  # Expose the web tier on a fixed NodePort for local access.
+  - target:
+      kind: Service
+      name: web
+    patch: |
+      - op: replace
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30080

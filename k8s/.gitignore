@@ -1,0 +1,3 @@
+# Real secret manifests — filled from the .example templates, never committed.
+base/api-secret.yaml
+base/web-secret.yaml

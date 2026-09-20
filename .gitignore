@@ -1,0 +1,51 @@
+# ─── Secrets (never commit) ────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+!.env.compose.example
+backend/.env
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Kubernetes secret manifests (filled from *.example.yaml)
+k8s/base/api-secret.yaml
+k8s/base/web-secret.yaml
+
+# Backend runtime state (SQLite DB, session secret, avatars, cached listings)
+backend/data/
+*.db
+*.sqlite
+*.sqlite3
+.session_secret
+
+# ─── Logs ──────────────────────────────────────────────────────────────────
+*.log
+backend/backend.log
+
+# ─── Python ────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ─── Node / Next.js ──────────────────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+.next/
+frontend/.next/
+frontend/out/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# ─── Editor / tooling (local only) ───────────────────────────────────────────
+.claude/
+.idea/
+
+# ─── OS cruft ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,30 @@
+# Runtime state — must never be baked into the image (mounted as a volume instead).
+data/
+*.db
+*.sqlite
+.session_secret
+
+# Secrets / local env
+.env
+.env.*
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+.venv/
+env/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+
+# Docs / git
+.git/
+.gitignore
+*.md

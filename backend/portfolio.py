@@ -197,6 +197,39 @@ def portfolio(user=Depends(require_user)):
     }
 
 
+# ---------------------------------------------------------------- order receipt
+
+@router.get("/portfolio/last-order")
+def last_order(user=Depends(require_user)):
+    """The user's most recent order (buy OR sell), for the emailed receipt PDF. `order` is null
+    if they have never traded."""
+    with _Tx() as conn:
+        row = conn.execute(
+            "SELECT symbol, side, qty, price, currency, amount_paise, realized_pnl_paise, created_at "
+            "FROM orders WHERE user_id = ? ORDER BY id DESC LIMIT 1", (user["id"],)
+        ).fetchone()
+    if not row:
+        return {"order": None}
+    sym, side, qty, price, currency, amount_paise, realized, created_at = row
+    meta = symbols.lookup(sym) or {}
+    return {
+        "order": {
+            "symbol": sym,
+            "name": meta.get("name", sym),
+            "exchange": meta.get("exchange", "—"),
+            "side": side,
+            "qty": qty,
+            "price": price,
+            "currency": currency,
+            "amount_inr": amount_paise / 100,
+            "realized_pnl_inr": realized / 100 if realized is not None else None,
+            "at": created_at,
+            "buyer_name": user.get("name"),
+            "buyer_email": user.get("email"),
+        }
+    }
+
+
 # ---------------------------------------------------------------- watchlist
 
 @router.get("/watchlist")
