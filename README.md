@@ -12,7 +12,7 @@
 <br>
 
 <p >
-  <img src="assets/exchanges/nasdaq.svg" alt="NASDAQ" height="34">
+  <img src="assets/exchanges/nasdaq.png" alt="NASDAQ" height="34">
   &nbsp;&nbsp;&nbsp;&nbsp;
   <img src="assets/exchanges/nyse.svg" alt="NYSE" height="34">
   &nbsp;&nbsp;&nbsp;&nbsp;
