@@ -9,6 +9,19 @@
   and screen exchanges by volume, buying pressure, profitability and momentum.
 </p>
 
+<br>
+
+<p >
+  <img src="assets/exchanges/nasdaq.svg" alt="NASDAQ" height="34">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/exchanges/nyse.svg" alt="NYSE" height="34">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/exchanges/nse.png" alt="NSE" height="34">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/exchanges/bse.svg" alt="BSE" height="34">
+</p>
+
+<br>
 
 ```
 backend/   FastAPI: listings, market data, forecasting model, screener, OAuth
